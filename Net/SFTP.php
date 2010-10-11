@@ -214,7 +214,7 @@ class Net_SFTP extends Net_SSH2 {
      */
     public function __construct($host, $port = 22, $timeout = 10)
     {
-        parent::Net_SSH2($host, $port, $timeout);
+        parent::__construct($host, $port, $timeout);
         $this->packet_types = array(
             1  => 'NET_SFTP_INIT',
             2  => 'NET_SFTP_VERSION',
@@ -296,7 +296,10 @@ class Net_SFTP extends Net_SSH2 {
     public function login($username, $password = '')
     {
         if (!parent::login($username, $password)) {
-            return false;
+			/** @todo Once the parent constructor has been modified so
+			 * that it uses exceptions rather than return codes in all
+			 * cases, we can get rid of this */
+            throw new Exception("SSH login failed");
         }
 
         $this->window_size_client_to_server[NET_SFTP_CHANNEL] = $this->window_size;
@@ -305,7 +308,7 @@ class Net_SFTP extends Net_SSH2 {
             NET_SSH2_MSG_CHANNEL_OPEN, strlen('session'), 'session', NET_SFTP_CHANNEL, $this->window_size, 0x4000);
 
         if (!$this->_send_binary_packet($packet)) {
-            return false;
+            throw new Exception("Failed to send session packet");
         }
 
         $this->channel_status[NET_SFTP_CHANNEL] = NET_SSH2_MSG_CHANNEL_OPEN;

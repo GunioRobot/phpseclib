@@ -167,8 +167,9 @@ class Net_SSH2 {
     /**
      * Execution Bitmap
      *
-     * The bits that are set reprsent functions that have been called already.  This is used to determine
-     * if a requisite function has been successfully executed.  If not, an error should be thrown.
+     * The bits that are set represent functions that have been called
+     * already. This is used to determine if a requisite function has
+     * been successfully executed.  If not, an error should be thrown.
      *
      * @var Integer
      * @access private
@@ -572,9 +573,8 @@ class Net_SSH2 {
      * @param optional Integer $port
      * @param optional Integer $timeout
      * @return Net_SSH2
-     * @access public
      */
-    function Net_SSH2($host, $port = 22, $timeout = 10)
+    public function __construct($host, $port = 22, $timeout = 10)
     {
         $this->message_numbers = array(
             1 => 'NET_SSH2_MSG_DISCONNECT',
@@ -1262,14 +1262,14 @@ class Net_SSH2 {
      * @param String $username
      * @param optional String $password
      * @return Boolean
-     * @access public
      * @internal It might be worthwhile, at some point, to protect against {@link http://tools.ietf.org/html/rfc4251#section-9.3.9 traffic analysis}
      *           by sending dummy SSH_MSG_IGNORE messages.
      */
-    function login($username, $password = '')
+    public function login($username, $password = '')
     {
         if (!($this->bitmap & NET_SSH2_MASK_CONSTRUCTOR)) {
-            return false;
+			/** @todo Is it even possible to hit this code? */
+            throw new Exception("login() called on an object that has not been constructed");
         }
 
         $packet = pack('CNa*',
@@ -1277,7 +1277,7 @@ class Net_SSH2 {
         );
 
         if (!$this->_send_binary_packet($packet)) {
-            return false;
+            throw new Exception("Failed to send ssh-userauth packet to server");
         }
 
         $response = $this->_get_binary_packet();
@@ -1290,11 +1290,10 @@ class Net_SSH2 {
 
         if ($type != NET_SSH2_MSG_SERVICE_ACCEPT) {
             user_error('Expected SSH_MSG_SERVICE_ACCEPT', E_USER_NOTICE);
-            return false;
+			throw new Exception("Expected packet SSH_MSG_SERVICE_ACCEPT was not received");
         }
 
-        // although PHP5's get_class() preserves the case, PHP4's does not
-        if (is_object($password) && strtolower(get_class($password)) == 'crypt_rsa')  {
+		if ($password instanceof Crypt_RSA) {
             return $this->_privatekey_login($username, $password);
         }
 
@@ -1305,7 +1304,7 @@ class Net_SSH2 {
         );
 
         if (!$this->_send_binary_packet($packet)) {
-            return false;
+			throw new Exception("Failed to send ssh-connection packet to server");
         }
 
         // remove the username and password from the last logged packet
@@ -1320,7 +1319,7 @@ class Net_SSH2 {
         $response = $this->_get_binary_packet();
         if ($response === false) {
             user_error('Connection closed by server', E_USER_NOTICE);
-            return false;
+            throw new Exception("Connection unexpectedly closed by server");
         }
 
         extract(unpack('Ctype', $this->_string_shift($response, 1)));
@@ -2034,9 +2033,8 @@ class Net_SSH2 {
      *
      * @param Integer $reason
      * @return Boolean
-     * @access private
      */
-    function _disconnect($reason)
+    private function _disconnect($reason)
     {
         if ($this->bitmap) {
             $data = pack('CNNa*Na*', NET_SSH2_MSG_DISCONNECT, $reason, 0, '', 0, '');
