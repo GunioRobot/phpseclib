@@ -315,32 +315,32 @@ class Net_SFTP extends Net_SSH2 {
 
         $response = $this->_get_channel_packet(NET_SFTP_CHANNEL);
         if ($response === false) {
-            return false;
+            throw new Exception("CHANNEL_OPEN packet not received");
         }
 
         $packet = pack('CNNa*CNa*',
             NET_SSH2_MSG_CHANNEL_REQUEST, $this->server_channels[NET_SFTP_CHANNEL], strlen('subsystem'), 'subsystem', 1, strlen('sftp'), 'sftp');
         if (!$this->_send_binary_packet($packet)) {
-            return false;
+            throw new Exception("Failed to send SFTP packet");
         }
 
         $this->channel_status[NET_SFTP_CHANNEL] = NET_SSH2_MSG_CHANNEL_REQUEST;
 
         $response = $this->_get_channel_packet(NET_SFTP_CHANNEL);
         if ($response === false) {
-            return false;
+            throw new Exception("Failed to get SFTP channel packet");
         }
 
         $this->channel_status[NET_SFTP_CHANNEL] = NET_SSH2_MSG_CHANNEL_DATA;
 
         if (!$this->_send_sftp_packet(NET_SFTP_INIT, "\0\0\0\3")) {
-            return false;
+            throw new Exception("Failed to send SFTP init packet");
         }
 
         $response = $this->_get_sftp_packet();
         if ($this->packet_type != NET_SFTP_VERSION) {
             user_error('Expected SSH_FXP_VERSION', E_USER_NOTICE);
-            return false;
+            throw new Exception("Expected SFTP version packet not received");
         }
 
         extract(unpack('Nversion', $this->_string_shift($response, 4)));
@@ -353,12 +353,15 @@ class Net_SFTP extends Net_SSH2 {
             $this->extensions[$key] = $value;
         }
 
-        /*
-         SFTPv4+ defines a 'newline' extension.  SFTPv3 seems to have unofficial support for it via 'newline@vandyke.com',
-         however, I'm not sure what 'newline@vandyke.com' is supposed to do (the fact that it's unofficial means that it's
-         not in the official SFTPv3 specs) and 'newline@vandyke.com' / 'newline' are likely not drop-in substitutes for
-         one another due to the fact that 'newline' comes with a SSH_FXF_TEXT bitmask whereas it seems unlikely that
-         'newline@vandyke.com' would.
+        /* SFTPv4+ defines a 'newline' extension.  SFTPv3 seems to
+         * have unofficial support for it via 'newline@vandyke.com',
+         * however, I'm not sure what 'newline@vandyke.com' is
+         * supposed to do (the fact that it's unofficial means that
+         * it's not in the official SFTPv3 specs) and
+         * 'newline@vandyke.com' / 'newline' are likely not drop-in
+         * substitutes for one another due to the fact that 'newline'
+         * comes with a SSH_FXF_TEXT bitmask whereas it seems unlikely
+         * that 'newline@vandyke.com' would.
         */
         /*
         if (isset($this->extensions['newline@vandyke.com'])) {
@@ -393,7 +396,7 @@ class Net_SFTP extends Net_SSH2 {
          channel and reopen it with a new and updated SSH_FXP_INIT packet.
         */
         if ($this->version != 3) {
-            return false;
+            throw new Exception("Unexpected version ".$this->version ." found");
         }
 
         $this->pwd = $this->_realpath('.');
