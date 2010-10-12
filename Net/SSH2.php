@@ -648,8 +648,7 @@ class Net_SSH2 {
 
         $this->fsock = @fsockopen($host, $port, $errno, $errstr, $timeout);
         if (!$this->fsock) {
-            user_error(rtrim("Cannot connect to $host. Error $errno. $errstr"), E_USER_NOTICE);
-            return;
+            throw new Exception("Cannot connect to $host. Error $errno. $errstr");
         }
 
         /* According to the SSH2 specs,
@@ -670,8 +669,7 @@ class Net_SSH2 {
         }
 
         if (feof($this->fsock)) {
-            user_error('Connection closed by server', E_USER_NOTICE);
-            return false;
+            throw new Exception('Connection closed by server');
         }
 
         $ext = array();
@@ -704,25 +702,22 @@ class Net_SSH2 {
         }
 
         if ($matches[1] != '1.99' && $matches[1] != '2.0') {
-            user_error("Cannot connect to SSH $matches[1] servers", E_USER_NOTICE);
-            return;
+            throw new Exception("Cannot connect to SSH $matches[1] servers");
         }
 
         fputs($this->fsock, $this->identifier . "\r\n");
 
         $response = $this->_get_binary_packet();
         if ($response === false) {
-            user_error('Connection closed by server', E_USER_NOTICE);
-            return;
+            throw new Exception('Connection closed by server');
         }
 
         if (ord($response[0]) != NET_SSH2_MSG_KEXINIT) {
-            user_error('Expected SSH_MSG_KEXINIT', E_USER_NOTICE);
-            return;
+            throw new Exception('Expected SSH_MSG_KEXINIT');
         }
 
         if (!$this->_key_exchange($response)) {
-            return;
+            throw new Exception("Key exchange failed");
         }
 
         $this->bitmap = NET_SSH2_MASK_CONSTRUCTOR;
