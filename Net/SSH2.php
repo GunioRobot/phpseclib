@@ -685,9 +685,8 @@ class Net_SSH2 {
      * Key Exchange
      *
      * @param String $kexinit_payload_server
-     * @access private
      */
-    function _key_exchange($kexinit_payload_server)
+    private function _key_exchange($kexinit_payload_server)
     {
         static $kex_algorithms = array(
             'diffie-hellman-group1-sha1', // REQUIRED
@@ -1309,9 +1308,8 @@ class Net_SSH2 {
      * @param String $username
      * @param String $password
      * @return Boolean
-     * @access private
      */
-    function _keyboard_interactive_login($username, $password)
+    private function _keyboard_interactive_login($username, $password)
     {
         $packet = pack('CNa*Na*Na*Na*Na*', 
             NET_SSH2_MSG_USERAUTH_REQUEST, strlen($username), $username, strlen('ssh-connection'), 'ssh-connection',
@@ -1330,9 +1328,8 @@ class Net_SSH2 {
      *
      * @param String $responses...
      * @return Boolean
-     * @access private
      */
-    function _keyboard_interactive_process()
+    private function _keyboard_interactive_process()
     {
         $responses = func_get_args();
 
@@ -1410,11 +1407,10 @@ class Net_SSH2 {
      * @param String $username
      * @param Crypt_RSA $password
      * @return Boolean
-     * @access private
      * @internal It might be worthwhile, at some point, to protect against {@link http://tools.ietf.org/html/rfc4251#section-9.3.9 traffic analysis}
      *           by sending dummy SSH_MSG_IGNORE messages.
      */
-    function _privatekey_login($username, $privatekey)
+    private function _privatekey_login($username, $privatekey)
     {
         // see http://tools.ietf.org/html/rfc4253#page-15
         $publickey = $privatekey->getPublicKey(CRYPT_RSA_PUBLIC_FORMAT_RAW);
@@ -1498,18 +1494,21 @@ class Net_SSH2 {
      *
      * @param String $command
      * @return String
-     * @access public
      */
-    function exec($command)
+    public function exec($command)
     {
         if (!($this->bitmap & NET_SSH2_MASK_LOGIN)) {
             return false;
         }
 
-        // RFC4254 defines the (client) window size as "bytes the other party can send before it must wait for the window to
-        // be adjusted".  0x7FFFFFFF is, at 4GB, the max size.  technically, it should probably be decremented, but, 
-        // honestly, if you're transfering more than 4GB, you probably shouldn't be using phpseclib, anyway.
-        // see http://tools.ietf.org/html/rfc4254#section-5.2 for more info
+        // RFC4254 defines the (client) window size as "bytes the
+        // other party can send before it must wait for the window to
+        // be adjusted".  0x7FFFFFFF is, at 4GB, the max size.
+        // technically, it should probably be decremented, but,
+        // honestly, if you're transfering more than 4GB, you probably
+        // shouldn't be using phpseclib, anyway.  see
+        // http://tools.ietf.org/html/rfc4254#section-5.2 for more
+        // info
         $this->window_size_client_to_server[NET_SSH2_CHANNEL_EXEC] = 0x7FFFFFFF;
         // 0x8000 is the maximum max packet size, per http://tools.ietf.org/html/rfc4253#section-6.1, although since PuTTy
         // uses 0x4000, that's what will be used here, as well.
@@ -1529,15 +1528,23 @@ class Net_SSH2 {
             return false;
         }
 
-        // sending a pty-req SSH_MSG_CHANNEL_REQUEST message is unnecessary and, in fact, in most cases, slows things
-        // down.  the one place where it might be desirable is if you're doing something like Net_SSH2::exec('ping localhost &').
-        // with a pty-req SSH_MSG_CHANNEL_REQUEST, exec() will return immediately and the ping process will then
-        // then immediately terminate.  without such a request exec() will loop indefinitely.  the ping process won't end but
-        // neither will your script.
+        // sending a pty-req SSH_MSG_CHANNEL_REQUEST message is
+        // unnecessary and, in fact, in most cases, slows things down.
+        // the one place where it might be desirable is if you're
+        // doing something like Net_SSH2::exec('ping localhost &').
+        // with a pty-req SSH_MSG_CHANNEL_REQUEST, exec() will return
+        // immediately and the ping process will then then immediately
+        // terminate.  without such a request exec() will loop
+        // indefinitely.  the ping process won't end but neither will
+        // your script.
 
-        // although, in theory, the size of SSH_MSG_CHANNEL_REQUEST could exceed the maximum packet size established by
-        // SSH_MSG_CHANNEL_OPEN_CONFIRMATION, RFC4254#section-5.1 states that the "maximum packet size" refers to the 
-        // "maximum size of an individual data packet". ie. SSH_MSG_CHANNEL_DATA.  RFC4254#section-5.2 corroborates.
+        // although, in theory, the size of SSH_MSG_CHANNEL_REQUEST
+        // could exceed the maximum packet size established by
+        // SSH_MSG_CHANNEL_OPEN_CONFIRMATION, RFC4254#section-5.1
+        // states that the "maximum packet size" refers to the
+        // "maximum size of an individual data
+        // packet". ie. SSH_MSG_CHANNEL_DATA.  RFC4254#section-5.2
+        // corroborates.
         $packet = pack('CNNa*CNa*',
             NET_SSH2_MSG_CHANNEL_REQUEST, $this->server_channels[NET_SSH2_CHANNEL_EXEC], strlen('exec'), 'exec', 1, strlen($command), $command);
         if (!$this->_send_binary_packet($packet)) {
@@ -1569,25 +1576,25 @@ class Net_SSH2 {
 
     /**
      * Disconnect
-     *
-     * @access public
+	 *
+	 * @todo This should be idempotent (and if it is already
+	 * idempotent, this should be explicitly documented)
      */
-    function disconnect()
+    public function disconnect()
     {
         $this->_disconnect(NET_SSH2_DISCONNECT_BY_APPLICATION);
     }
 
     /**
-     * Destructor.
-     *
-     * Will be called, automatically, if you're supporting just PHP5.  If you're supporting PHP4, you'll need to call
-     * disconnect().
-     *
-     * @access public
+     * The destructor disconnects the connection when the object is
+     * garbage collected.
      */
-    function __destruct()
+    public function __destruct()
     {
         $this->disconnect();
+
+		/** @todo Should we call parent::__destruct() for
+		 cleanness? */
     }
 
     /**
@@ -1597,9 +1604,8 @@ class Net_SSH2 {
      *
      * @see Net_SSH2::_send_binary_packet()
      * @return String
-     * @access private
      */
-    function _get_binary_packet()
+    private function _get_binary_packet()
     {
         if (feof($this->fsock)) {
             user_error('Connection closed prematurely', E_USER_NOTICE);
@@ -1664,9 +1670,8 @@ class Net_SSH2 {
      *
      * @see Net_SSH2::_get_binary_packet()
      * @return String
-     * @access private
      */
-    function _filter($payload)
+    private function _filter($payload)
     {
         switch (ord($payload[0])) {
             case NET_SSH2_MSG_DISCONNECT:
@@ -1750,9 +1755,8 @@ class Net_SSH2 {
      *
      * @param $client_channel
      * @return Mixed
-     * @access private
      */
-    function _get_channel_packet($client_channel)
+    private function _get_channel_packet($client_channel)
     {
         if (!empty($this->channel_buffers[$client_channel])) {
             return array_shift($this->channel_buffers[$client_channel]);
@@ -1798,10 +1802,16 @@ class Net_SSH2 {
             switch ($type) {
                 case NET_SSH2_MSG_CHANNEL_DATA:
                     if ($client_channel == NET_SSH2_CHANNEL_EXEC) {
-                        // SCP requires null packets, such as this, be sent.  further, in the case of the ssh.com SSH server
-                        // this actually seems to make things twice as fast.  more to the point, the message right after 
-                        // SSH_MSG_CHANNEL_DATA (usually SSH_MSG_IGNORE) won't block for as long as it would have otherwise.
-                        // in OpenSSH it slows things down but only by a couple thousandths of a second.
+                        // SCP requires null packets, such as this, be
+                        // sent.  further, in the case of the ssh.com
+                        // SSH server this actually seems to make
+                        // things twice as fast.  more to the point,
+                        // the message right after
+                        // SSH_MSG_CHANNEL_DATA (usually
+                        // SSH_MSG_IGNORE) won't block for as long as
+                        // it would have otherwise.  in OpenSSH it
+                        // slows things down but only by a couple
+                        // thousandths of a second.
                         $this->_send_channel_packet($client_channel, chr(0));
                     }
                     extract(unpack('Nlength', $this->_string_shift($response, 4)));
@@ -1818,7 +1828,8 @@ class Net_SSH2 {
                     if ($client_channel == NET_SSH2_CHANNEL_EXEC) {
                         $this->_send_channel_packet($client_channel, chr(0));
                     }
-                    // currently, there's only one possible value for $data_type_code: NET_SSH2_EXTENDED_DATA_STDERR
+                    // currently, there's only one possible value for
+                    // $data_type_code: NET_SSH2_EXTENDED_DATA_STDERR
                     extract(unpack('Ndata_type_code/Nlength', $this->_string_shift($response, 8)));
                     $data = $this->_string_shift($response, $length);
                     if ($client_channel == $channel) {
@@ -1844,8 +1855,10 @@ class Net_SSH2 {
                             }
                         //case 'exit-status':
                         default:
-                            // "Some systems may not implement signals, in which case they SHOULD ignore this message."
-                            //  -- http://tools.ietf.org/html/rfc4254#section-6.9
+                            // "Some systems may not implement
+                            // signals, in which case they SHOULD
+                            // ignore this message."  --
+                            // http://tools.ietf.org/html/rfc4254#section-6.9
                             break;
                     }
                     break;
@@ -1869,13 +1882,11 @@ class Net_SSH2 {
      * @param String $data
      * @see Net_SSH2::_get_binary_packet()
      * @return Boolean
-     * @access private
      */
-    function _send_binary_packet($data)
+    private function _send_binary_packet($data)
     {
         if (feof($this->fsock)) {
-            user_error('Connection closed prematurely', E_USER_NOTICE);
-            return false;
+			throw new Exception("Connection closed prematurely");
         }
 
         //if ($this->compress) {
@@ -1888,7 +1899,8 @@ class Net_SSH2 {
         $packet_length = strlen($data) + 9;
         // round up to the nearest $this->encrypt_block_size
         $packet_length+= (($this->encrypt_block_size - 1) * $packet_length) % $this->encrypt_block_size;
-        // subtracting strlen($data) is obvious - subtracting 5 is necessary because of packet_length and padding_length
+        // subtracting strlen($data) is obvious - subtracting 5 is
+        // necessary because of packet_length and padding_length
         $padding_length = $packet_length - strlen($data) - 5;
 
         $padding = '';
@@ -1896,7 +1908,8 @@ class Net_SSH2 {
             $padding.= chr(crypt_random(0, 255));
         }
 
-        // we subtract 4 from packet_length because the packet_length field isn't supposed to include itself
+        // we subtract 4 from packet_length because the packet_length
+        // field isn't supposed to include itself
         $packet = pack('NCa*', $packet_length - 4, $padding_length, $data . $padding);
 
         $hmac = $this->hmac_create !== false ? $this->hmac_create->hash(pack('Na*', $this->send_seq_no, $packet)) : '';
@@ -1932,9 +1945,8 @@ class Net_SSH2 {
      * @param Integer $client_channel
      * @param String $data
      * @return Boolean
-     * @access private
      */
-    function _send_channel_packet($client_channel, $data)
+    private function _send_channel_packet($client_channel, $data)
     {
         while (strlen($data) > $this->packet_size_client_to_server[$client_channel]) {
             // resize the window, if appropriate
@@ -1981,6 +1993,9 @@ class Net_SSH2 {
      *
      * @param Integer $reason
      * @return Boolean
+	 *
+	 * @todo Return value is false or null, not false or true - and
+	 * does it convey useful information anyway?
      */
     private function _disconnect($reason)
     {
@@ -2001,9 +2016,8 @@ class Net_SSH2 {
      * @param String $string
      * @param optional Integer $index
      * @return String
-     * @access private
      */
-    function _string_shift(&$string, $index = 1)
+    private function _string_shift(&$string, $index = 1)
     {
         $substr = substr($string, 0, $index);
         $string = substr($string, $index);
@@ -2013,14 +2027,16 @@ class Net_SSH2 {
     /**
      * Define Array
      *
-     * Takes any number of arrays whose indices are integers and whose values are strings and defines a bunch of
-     * named constants from it, using the value as the name of the constant and the index as the value of the constant.
-     * If any of the constants that would be defined already exists, none of the constants will be defined.
+     * Takes any number of arrays whose indices are integers and whose
+     * values are strings and defines a bunch of named constants from
+     * it, using the value as the name of the constant and the index
+     * as the value of the constant.  If any of the constants that
+     * would be defined already exists, none of the constants will be
+     * defined.
      *
      * @param Array $array
-     * @access private
      */
-    function _define_array()
+    private function _define_array()
     {
         $args = func_get_args();
         foreach ($args as $arg) {
@@ -2037,12 +2053,13 @@ class Net_SSH2 {
     /**
      * Returns a log of the packets that have been sent and received.
      *
-     * Returns a string if NET_SSH2_LOGGING == NET_SSH2_LOG_COMPLEX, an array if NET_SSH2_LOGGING == NET_SSH2_LOG_SIMPLE and false if !defined('NET_SSH2_LOGGING')
+     * Returns a string if NET_SSH2_LOGGING == NET_SSH2_LOG_COMPLEX,
+     * an array if NET_SSH2_LOGGING == NET_SSH2_LOG_SIMPLE and false
+     * if !defined('NET_SSH2_LOGGING')
      *
-     * @access public
      * @return String or Array
      */
-    function getLog()
+    public function getLog()
     {
         if (!defined('NET_SSH2_LOGGING')) {
             return false;
@@ -2065,10 +2082,9 @@ class Net_SSH2 {
      *
      * @param Array $message_log
      * @param Array $message_number_log
-     * @access private
      * @return String
      */
-    function _format_log($message_log, $message_number_log)
+    private function _format_log($message_log, $message_number_log)
     {
         static $boundary = ':', $long_width = 65, $short_width = 16;
 
@@ -2106,9 +2122,8 @@ class Net_SSH2 {
      * Returns all errors
      *
      * @return String
-     * @access public
      */
-    function getErrors()
+    public function getErrors()
     {
         return $this->errors;
     }
@@ -2117,9 +2132,8 @@ class Net_SSH2 {
      * Returns the last error
      *
      * @return String
-     * @access public
      */
-    function getLastError()
+    public function getLastError()
     {
         return $this->errors[count($this->errors) - 1];
     }
@@ -2128,9 +2142,8 @@ class Net_SSH2 {
      * Return the server identification.
      *
      * @return String
-     * @access public
      */
-    function getServerIdentification()
+    public function getServerIdentification()
     {
         return $this->server_identifier;
     }
@@ -2139,9 +2152,8 @@ class Net_SSH2 {
      * Return a list of the key exchange algorithms the server supports.
      *
      * @return Array
-     * @access public
      */
-    function getKexAlgorithms()
+    public function getKexAlgorithms()
     {
         return $this->kex_algorithms;
     }
@@ -2150,97 +2162,96 @@ class Net_SSH2 {
      * Return a list of the host key (public key) algorithms the server supports.
      *
      * @return Array
-     * @access public
      */
-    function getServerHostKeyAlgorithms()
+    public function getServerHostKeyAlgorithms()
     {
         return $this->server_host_key_algorithms;
     }
 
     /**
-     * Return a list of the (symmetric key) encryption algorithms the server supports, when receiving stuff from the client.
+     * Return a list of the (symmetric key) encryption algorithms the
+     * server supports, when receiving stuff from the client.
      *
      * @return Array
-     * @access public
      */
-    function getEncryptionAlgorithmsClient2Server()
+    public function getEncryptionAlgorithmsClient2Server()
     {
         return $this->encryption_algorithms_client_to_server;
     }
 
     /**
-     * Return a list of the (symmetric key) encryption algorithms the server supports, when sending stuff to the client.
+     * Return a list of the (symmetric key) encryption algorithms the
+     * server supports, when sending stuff to the client.
      *
      * @return Array
-     * @access public
      */
-    function getEncryptionAlgorithmsServer2Client()
+    public function getEncryptionAlgorithmsServer2Client()
     {
         return $this->encryption_algorithms_server_to_client;
     }
 
     /**
-     * Return a list of the MAC algorithms the server supports, when receiving stuff from the client.
+     * Return a list of the MAC algorithms the server supports, when
+     * receiving stuff from the client.
      *
      * @return Array
-     * @access public
      */
-    function getMACAlgorithmsClient2Server()
+    public function getMACAlgorithmsClient2Server()
     {
         return $this->mac_algorithms_client_to_server;
     }
 
     /**
-     * Return a list of the MAC algorithms the server supports, when sending stuff to the client.
+     * Return a list of the MAC algorithms the server supports, when
+     * sending stuff to the client.
      *
      * @return Array
-     * @access public
      */
-    function getMACAlgorithmsServer2Client()
+    public function getMACAlgorithmsServer2Client()
     {
         return $this->mac_algorithms_server_to_client;
     }
 
     /**
-     * Return a list of the compression algorithms the server supports, when receiving stuff from the client.
+     * Return a list of the compression algorithms the server
+     * supports, when receiving stuff from the client.
      *
      * @return Array
-     * @access public
      */
-    function getCompressionAlgorithmsClient2Server()
+    public function getCompressionAlgorithmsClient2Server()
     {
         return $this->compression_algorithms_client_to_server;
     }
 
     /**
-     * Return a list of the compression algorithms the server supports, when sending stuff to the client.
+     * Return a list of the compression algorithms the server
+     * supports, when sending stuff to the client.
      *
      * @return Array
-     * @access public
      */
-    function getCompressionAlgorithmsServer2Client()
+    public function getCompressionAlgorithmsServer2Client()
     {
         return $this->compression_algorithms_server_to_client;
     }
 
     /**
-     * Return a list of the languages the server supports, when sending stuff to the client.
+     * Return a list of the languages the server supports, when
+     * sending stuff to the client.
      *
      * @return Array
-     * @access public
      */
-    function getLanguagesServer2Client()
+    public function getLanguagesServer2Client()
     {
         return $this->languages_server_to_client;
     }
 
     /**
-     * Return a list of the languages the server supports, when receiving stuff from the client.
+     * Return a list of the languages the server supports, when
+     * receiving stuff from the client.
      *
      * @return Array
-     * @access public
      */
-    function getLanguagesClient2Server()
+    public function getLanguagesClient2Server()
     {
         return $this->languages_client_to_server;
     }
@@ -2248,13 +2259,14 @@ class Net_SSH2 {
     /**
      * Returns the server public host key.
      *
-     * Caching this the first time you connect to a server and checking the result on subsequent connections
-     * is recommended.  Returns false if the server signature is not signed correctly with the public host key.
+     * Caching this the first time you connect to a server and
+     * checking the result on subsequent connections is recommended.
+     * Returns false if the server signature is not signed correctly
+     * with the public host key.
      *
      * @return Mixed
-     * @access public
      */
-    function getServerPublicHostKey()
+    public function getServerPublicHostKey()
     {
         $signature = $this->signature;
         $server_public_host_key = $this->server_public_host_key;
@@ -2276,9 +2288,10 @@ class Net_SSH2 {
                 $temp = unpack('Nlength', $this->_string_shift($server_public_host_key, 4));
                 $y = new Math_BigInteger($this->_string_shift($server_public_host_key, $temp['length']), -256);
 
-                /* The value for 'dss_signature_blob' is encoded as a string containing
-                   r, followed by s (which are 160-bit integers, without lengths or
-                   padding, unsigned, and in network byte order). */
+                /* The value for 'dss_signature_blob' is encoded as a
+                   string containing r, followed by s (which are
+                   160-bit integers, without lengths or padding,
+                   unsigned, and in network byte order). */
                 $temp = unpack('Nlength', $this->_string_shift($signature, 4));
                 if ($temp['length'] != 40) {
                     user_error('Invalid signature', E_USER_NOTICE);
