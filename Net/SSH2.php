@@ -367,7 +367,37 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $message_numbers = array();
+    private $message_numbers = 
+		array(
+			  1 => 'NET_SSH2_MSG_DISCONNECT',
+			  2 => 'NET_SSH2_MSG_IGNORE',
+			  3 => 'NET_SSH2_MSG_UNIMPLEMENTED',
+			  4 => 'NET_SSH2_MSG_DEBUG',
+			  5 => 'NET_SSH2_MSG_SERVICE_REQUEST',
+			  6 => 'NET_SSH2_MSG_SERVICE_ACCEPT',
+			  20 => 'NET_SSH2_MSG_KEXINIT',
+			  21 => 'NET_SSH2_MSG_NEWKEYS',
+			  30 => 'NET_SSH2_MSG_KEXDH_INIT',
+			  31 => 'NET_SSH2_MSG_KEXDH_REPLY',
+			  50 => 'NET_SSH2_MSG_USERAUTH_REQUEST',
+			  51 => 'NET_SSH2_MSG_USERAUTH_FAILURE',
+			  52 => 'NET_SSH2_MSG_USERAUTH_SUCCESS',
+			  53 => 'NET_SSH2_MSG_USERAUTH_BANNER',
+			  80 => 'NET_SSH2_MSG_GLOBAL_REQUEST',
+			  81 => 'NET_SSH2_MSG_REQUEST_SUCCESS',
+			  82 => 'NET_SSH2_MSG_REQUEST_FAILURE',
+			  90 => 'NET_SSH2_MSG_CHANNEL_OPEN',
+			  91 => 'NET_SSH2_MSG_CHANNEL_OPEN_CONFIRMATION',
+			  92 => 'NET_SSH2_MSG_CHANNEL_OPEN_FAILURE',
+			  93 => 'NET_SSH2_MSG_CHANNEL_WINDOW_ADJUST',
+			  94 => 'NET_SSH2_MSG_CHANNEL_DATA',
+			  95 => 'NET_SSH2_MSG_CHANNEL_EXTENDED_DATA',
+			  96 => 'NET_SSH2_MSG_CHANNEL_EOF',
+			  97 => 'NET_SSH2_MSG_CHANNEL_CLOSE',
+			  98 => 'NET_SSH2_MSG_CHANNEL_REQUEST',
+			  99 => 'NET_SSH2_MSG_CHANNEL_SUCCESS',
+			  100 => 'NET_SSH2_MSG_CHANNEL_FAILURE'
+			  );
 
     /**
      * Disconnection Message 'reason codes' defined in RFC4253
@@ -375,7 +405,24 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $disconnect_reasons = array();
+    private $disconnect_reasons = 
+		array(
+			  1 => 'NET_SSH2_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT',
+			  2 => 'NET_SSH2_DISCONNECT_PROTOCOL_ERROR',
+			  3 => 'NET_SSH2_DISCONNECT_KEY_EXCHANGE_FAILED',
+			  4 => 'NET_SSH2_DISCONNECT_RESERVED',
+			  5 => 'NET_SSH2_DISCONNECT_MAC_ERROR',
+			  6 => 'NET_SSH2_DISCONNECT_COMPRESSION_ERROR',
+			  7 => 'NET_SSH2_DISCONNECT_SERVICE_NOT_AVAILABLE',
+			  8 => 'NET_SSH2_DISCONNECT_PROTOCOL_VERSION_NOT_SUPPORTED',
+			  9 => 'NET_SSH2_DISCONNECT_HOST_KEY_NOT_VERIFIABLE',
+			  10 => 'NET_SSH2_DISCONNECT_CONNECTION_LOST',
+			  11 => 'NET_SSH2_DISCONNECT_BY_APPLICATION',
+			  12 => 'NET_SSH2_DISCONNECT_TOO_MANY_CONNECTIONS',
+			  13 => 'NET_SSH2_DISCONNECT_AUTH_CANCELLED_BY_USER',
+			  14 => 'NET_SSH2_DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE',
+			  15 => 'NET_SSH2_DISCONNECT_ILLEGAL_USER_NAME'
+			  );
 
     /**
      * SSH_MSG_CHANNEL_OPEN_FAILURE 'reason codes', defined in RFC4254
@@ -383,7 +430,9 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $channel_open_failure_reasons = array();
+    private $channel_open_failure_reasons = 
+		array(1 => 'NET_SSH2_OPEN_ADMINISTRATIVELY_PROHIBITED'
+			  );
 
     /**
      * Terminal Modes
@@ -392,7 +441,9 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $terminal_modes = array();
+	 private $terminal_modes = 
+		 array(0 => 'NET_SSH2_TTY_OP_END'
+			   );
 
     /**
      * SSH_MSG_CHANNEL_EXTENDED_DATA's data_type_codes
@@ -401,7 +452,9 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $channel_extended_data_type_codes = array();
+    private $channel_extended_data_type_codes = 
+		array(1 => 'NET_SSH2_EXTENDED_DATA_STDERR'
+			  );
 
     /**
      * Send Sequence Number
@@ -437,8 +490,8 @@ class Net_SSH2 {
     /**
      * Channel Buffers
      *
-     * If a client requests a packet from one channel but receives two packets from another those packets should
-     * be placed in a buffer
+     * If a client requests a packet from one channel but receives two
+     * packets from another those packets should be placed in a buffer
      *
      * @see Net_SSH2::_get_channel_packet()
      * @see Net_SSH2::exec()
@@ -536,64 +589,6 @@ class Net_SSH2 {
      */
     public function __construct($host, $port = 22, $timeout = 10)
     {
-        $this->message_numbers = array(
-            1 => 'NET_SSH2_MSG_DISCONNECT',
-            2 => 'NET_SSH2_MSG_IGNORE',
-            3 => 'NET_SSH2_MSG_UNIMPLEMENTED',
-            4 => 'NET_SSH2_MSG_DEBUG',
-            5 => 'NET_SSH2_MSG_SERVICE_REQUEST',
-            6 => 'NET_SSH2_MSG_SERVICE_ACCEPT',
-            20 => 'NET_SSH2_MSG_KEXINIT',
-            21 => 'NET_SSH2_MSG_NEWKEYS',
-            30 => 'NET_SSH2_MSG_KEXDH_INIT',
-            31 => 'NET_SSH2_MSG_KEXDH_REPLY',
-            50 => 'NET_SSH2_MSG_USERAUTH_REQUEST',
-            51 => 'NET_SSH2_MSG_USERAUTH_FAILURE',
-            52 => 'NET_SSH2_MSG_USERAUTH_SUCCESS',
-            53 => 'NET_SSH2_MSG_USERAUTH_BANNER',
-
-            80 => 'NET_SSH2_MSG_GLOBAL_REQUEST',
-            81 => 'NET_SSH2_MSG_REQUEST_SUCCESS',
-            82 => 'NET_SSH2_MSG_REQUEST_FAILURE',
-            90 => 'NET_SSH2_MSG_CHANNEL_OPEN',
-            91 => 'NET_SSH2_MSG_CHANNEL_OPEN_CONFIRMATION',
-            92 => 'NET_SSH2_MSG_CHANNEL_OPEN_FAILURE',
-            93 => 'NET_SSH2_MSG_CHANNEL_WINDOW_ADJUST',
-            94 => 'NET_SSH2_MSG_CHANNEL_DATA',
-            95 => 'NET_SSH2_MSG_CHANNEL_EXTENDED_DATA',
-            96 => 'NET_SSH2_MSG_CHANNEL_EOF',
-            97 => 'NET_SSH2_MSG_CHANNEL_CLOSE',
-            98 => 'NET_SSH2_MSG_CHANNEL_REQUEST',
-            99 => 'NET_SSH2_MSG_CHANNEL_SUCCESS',
-            100 => 'NET_SSH2_MSG_CHANNEL_FAILURE'
-        );
-        $this->disconnect_reasons = array(
-            1 => 'NET_SSH2_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT',
-            2 => 'NET_SSH2_DISCONNECT_PROTOCOL_ERROR',
-            3 => 'NET_SSH2_DISCONNECT_KEY_EXCHANGE_FAILED',
-            4 => 'NET_SSH2_DISCONNECT_RESERVED',
-            5 => 'NET_SSH2_DISCONNECT_MAC_ERROR',
-            6 => 'NET_SSH2_DISCONNECT_COMPRESSION_ERROR',
-            7 => 'NET_SSH2_DISCONNECT_SERVICE_NOT_AVAILABLE',
-            8 => 'NET_SSH2_DISCONNECT_PROTOCOL_VERSION_NOT_SUPPORTED',
-            9 => 'NET_SSH2_DISCONNECT_HOST_KEY_NOT_VERIFIABLE',
-            10 => 'NET_SSH2_DISCONNECT_CONNECTION_LOST',
-            11 => 'NET_SSH2_DISCONNECT_BY_APPLICATION',
-            12 => 'NET_SSH2_DISCONNECT_TOO_MANY_CONNECTIONS',
-            13 => 'NET_SSH2_DISCONNECT_AUTH_CANCELLED_BY_USER',
-            14 => 'NET_SSH2_DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE',
-            15 => 'NET_SSH2_DISCONNECT_ILLEGAL_USER_NAME'
-        );
-        $this->channel_open_failure_reasons = array(
-            1 => 'NET_SSH2_OPEN_ADMINISTRATIVELY_PROHIBITED'
-        );
-        $this->terminal_modes = array(
-            0 => 'NET_SSH2_TTY_OP_END'
-        );
-        $this->channel_extended_data_type_codes = array(
-            1 => 'NET_SSH2_EXTENDED_DATA_STDERR'
-        );
-
         $this->_define_array(
             $this->message_numbers,
             $this->disconnect_reasons,
