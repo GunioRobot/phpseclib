@@ -102,7 +102,6 @@ require_once('Crypt/AES.php');
  * @see Net_SSH2::bitmap
  * @access private
  */
-define('NET_SSH2_MASK_CONSTRUCTOR', 0x00000001);
 define('NET_SSH2_MASK_LOGIN',       0x00000002);
 /**#@-*/
 
@@ -719,8 +718,6 @@ class Net_SSH2 {
         if (!$this->_key_exchange($response)) {
             throw new Exception("Key exchange failed");
         }
-
-        $this->bitmap = NET_SSH2_MASK_CONSTRUCTOR;
     }
 
     /**
@@ -1262,11 +1259,6 @@ class Net_SSH2 {
      */
     public function login($username, $password = '')
     {
-        if (!($this->bitmap & NET_SSH2_MASK_CONSTRUCTOR)) {
-			/** @todo Is it even possible to hit this code? */
-            throw new Exception("login() called on an object that has not been constructed");
-        }
-
         $packet = pack('CNa*',
             NET_SSH2_MSG_SERVICE_REQUEST, strlen('ssh-userauth'), 'ssh-userauth'
         );
@@ -1744,7 +1736,7 @@ class Net_SSH2 {
         }
 
         // see http://tools.ietf.org/html/rfc4252#section-5.4; only called when the encryption has been activated and when we haven't already logged in
-        if (($this->bitmap & NET_SSH2_MASK_CONSTRUCTOR) && !($this->bitmap & NET_SSH2_MASK_LOGIN) && ord($payload[0]) == NET_SSH2_MSG_USERAUTH_BANNER) {
+        if (!($this->bitmap & NET_SSH2_MASK_LOGIN) && ord($payload[0]) == NET_SSH2_MSG_USERAUTH_BANNER) {
             $this->_string_shift($payload, 1);
             extract(unpack('Nlength', $this->_string_shift($payload, 4)));
             $this->errors[] = 'SSH_MSG_USERAUTH_BANNER: ' . utf8_decode($this->_string_shift($payload, $length));
@@ -1752,7 +1744,7 @@ class Net_SSH2 {
         }
 
         // only called when we've already logged in
-        if (($this->bitmap & NET_SSH2_MASK_CONSTRUCTOR) && ($this->bitmap & NET_SSH2_MASK_LOGIN)) {
+        if (($this->bitmap & NET_SSH2_MASK_LOGIN)) {
             switch (ord($payload[0])) {
                 case NET_SSH2_MSG_GLOBAL_REQUEST: // see http://tools.ietf.org/html/rfc4254#section-4
                     $this->_string_shift($payload, 1);
