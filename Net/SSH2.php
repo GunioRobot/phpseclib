@@ -728,8 +728,12 @@ class Net_SSH2 {
         );
 
         static $str_kex_algorithms, $str_server_host_key_algorithms,
-               $encryption_algorithms_server_to_client, $mac_algorithms_server_to_client, $compression_algorithms_server_to_client,
-               $encryption_algorithms_client_to_server, $mac_algorithms_client_to_server, $compression_algorithms_client_to_server;
+			$encryption_algorithms_server_to_client, 
+			$mac_algorithms_server_to_client,
+			$compression_algorithms_server_to_client,
+			$encryption_algorithms_client_to_server,
+			$mac_algorithms_client_to_server,
+			$compression_algorithms_client_to_server;
 
         if (empty($str_kex_algorithms)) {
             $str_kex_algorithms = implode(',', $kex_algorithms);
@@ -2028,6 +2032,11 @@ class Net_SSH2 {
      * as the value of the constant.  If any of the constants that
      * would be defined already exists, none of the constants will be
      * defined.
+	 *
+	 * @todo Above comment is suspicious. If any of the constants that
+	 * would be defined already exists, *subsequent* ones will not be
+	 * defined, but prior ones will be. At least, that's what it seems
+	 * to me...
      *
      * @param Array $array
      */
