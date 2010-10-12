@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * Interface to an object that will handle all the details of socket
+ * communications for Net_SSHx and related classes. This is so that we
+ * can stub out all the over-the-wire stuff for unit testing.
+ */
+interface ISocketHandler {
+	function openSocket($host, $port, $timeout);
+
+	function isEof($socket);
+}
+
+class DefaultSocketHandler implements ISocketHandler {
+	public function openSocket($host, $port, $timeout) {
+		$fsock = @fsockopen($host, $port, $errno, $errstr, $timeout);
+        if (!$fsock) {
+            throw new Exception("Cannot connect to $host. Error $errno. $errstr");
+        }
+	}
+
+	public function isEof($socket) {
+		return feof($socket);
+	}
+}

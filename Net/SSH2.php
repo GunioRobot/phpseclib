@@ -96,6 +96,8 @@ require_once('Crypt/RC4.php');
  */
 require_once('Crypt/AES.php');
 
+require_once('Net/SocketHandler.php');
+
 /**#@+
  * Execution Bitmap Masks
  *
@@ -577,6 +579,11 @@ class Net_SSH2 {
      */
     private $signature_format = '';
 
+	/**
+	 * Object that handles all the details of socket communications
+	 */
+	private $socket_handler;
+
     /**
      * Default Constructor.
      *
@@ -587,8 +594,14 @@ class Net_SSH2 {
      * @param optional Integer $timeout
      * @return Net_SSH2
      */
-    public function __construct($host, $port = 22, $timeout = 10)
+    public function __construct($host, $port = 22, $timeout = 10, $socket_handler = null)
     {
+		if ($socket_handler == null) {
+			$socket_handler = new DefaultSocketHandler();
+		}
+
+		$this->socket_handler = $socket_handler;
+
         $this->_define_array(
             $this->message_numbers,
             $this->disconnect_reasons,
@@ -601,10 +614,7 @@ class Net_SSH2 {
                   61 => 'NET_SSH2_MSG_USERAUTH_INFO_RESPONSE')
         );
 
-        $this->fsock = @fsockopen($host, $port, $errno, $errstr, $timeout);
-        if (!$this->fsock) {
-            throw new Exception("Cannot connect to $host. Error $errno. $errstr");
-        }
+		$this->fsock = $this->socket_handler->openSocket($host, $port, $timeout);
 
         /* According to the SSH2 specs,
 
@@ -615,7 +625,8 @@ class Net_SSH2 {
            MUST be able to process such lines." */
         $temp = '';
         $extra = '';
-        while (!feof($this->fsock) && !preg_match('#^SSH-(\d\.\d+)#', $temp, $matches)) {
+        while (!$this->socket_handler->isEof($this->fsock)
+			   && !preg_match('#^SSH-(\d\.\d+)#', $temp, $matches)) {
             if (substr($temp, -2) == "\r\n") {
                 $extra.= $temp;
                 $temp = '';
@@ -623,7 +634,7 @@ class Net_SSH2 {
             $temp.= fgets($this->fsock, 255);
         }
 
-        if (feof($this->fsock)) {
+        if ($this->socket_handler->isEof($this->fsock)) {
             throw new Exception('Connection closed by server');
         }
 
