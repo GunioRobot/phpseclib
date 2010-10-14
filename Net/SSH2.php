@@ -631,7 +631,7 @@ class Net_SSH2 {
                 $extra.= $temp;
                 $temp = '';
             }
-            $temp.= fgets($this->fsock, 255);
+            $temp.= $this->socket_handler->readBytes($this->fsock, 255);
         }
 
         if ($this->socket_handler->isEof($this->fsock)) {

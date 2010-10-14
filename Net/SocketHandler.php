@@ -9,6 +9,8 @@ interface ISocketHandler {
 	function openSocket($host, $port, $timeout);
 
 	function isEof($socket);
+
+	function readBytes($socket, $numBytes);
 }
 
 class DefaultSocketHandler implements ISocketHandler {
@@ -21,5 +23,9 @@ class DefaultSocketHandler implements ISocketHandler {
 
 	public function isEof($socket) {
 		return feof($socket);
+	}
+
+	public function readBytes($socket, $numBytes) {
+		return fgets($socket, $numBytes);
 	}
 }
