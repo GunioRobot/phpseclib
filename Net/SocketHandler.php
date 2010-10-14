@@ -19,6 +19,8 @@ class DefaultSocketHandler implements ISocketHandler {
         if (!$fsock) {
             throw new Exception("Cannot connect to $host. Error $errno. $errstr");
         }
+
+		return $fsock;
 	}
 
 	public function isEof($socket) {
