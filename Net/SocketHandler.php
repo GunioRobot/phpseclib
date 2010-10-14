@@ -6,6 +6,10 @@
  * can stub out all the over-the-wire stuff for unit testing.
  */
 interface ISocketHandler {
+	/**
+	 * MUST return a valid socket, or else throw an appropriate
+	 * exception
+	 */
 	function openSocket($host, $port, $timeout);
 
 	function isEof($socket);
