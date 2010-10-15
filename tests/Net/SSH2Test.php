@@ -38,8 +38,33 @@ class Net_SSH2Test extends PHPUnit_Framework_TestCase {
 			->will($this->returnValue(false));
 
 		$mockSocketHandler->expects($this->once())
-			->method('readBytes')
+			->method('readLine')
 			->will($this->returnValue('SSH-3.0'));
+
+		$ssh = new Net_SSH2('nonexistent.invalid', 22, 10, $mockSocketHandler);
+	}
+
+	/**
+	 * @expectedException Exception
+	 * @expectedExceptionMessage Connection closed by server
+	 *
+	 * @todo This is throwing an exception, when probably there is no
+	 * need to if we could get the mock expectations correct */
+	public function testConnectionV2() {
+		$mockSocketHandler = $this->getMock('ISocketHandler');
+
+		$mockSocketHandler->expects($this->any())
+			->method('isEof')
+			->will($this->returnValue(false));
+
+		$mockSocketHandler->expects($this->once())
+			->method('readLine')
+			->will($this->returnValue('SSH-2.0'));
+
+		$mockSocketHandler->expects($this->exactly(1))
+			->method('readBytes')
+			->will($this->onConsecutiveCalls(pack('NC', 2, 0),
+											 '00'));
 
 		$ssh = new Net_SSH2('nonexistent.invalid', 22, 10, $mockSocketHandler);
 	}

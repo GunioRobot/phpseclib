@@ -14,7 +14,15 @@ interface ISocketHandler {
 
 	function isEof($socket);
 
+	/**
+	 * Read from the socket until the first newline, or until
+	 * $maxBytes bytes have been read, whichever comes first.
+	 */
+	function readLine($socket, $maxBytes);
+
 	function readBytes($socket, $numBytes);
+
+	function writeBytes($socket, $data);
 }
 
 class DefaultSocketHandler implements ISocketHandler {
@@ -31,7 +39,15 @@ class DefaultSocketHandler implements ISocketHandler {
 		return feof($socket);
 	}
 
+	public function readLine($socket, $maxBytes) {
+		return fgets($socket, $maxBytes);
+	}
+
 	public function readBytes($socket, $numBytes) {
-		return fgets($socket, $numBytes);
+		return fread($socket, $numBytes);
+	}
+
+	public function writeBytes($socket, $data) {
+		return fputs($socket, $data);
 	}
 }

@@ -631,7 +631,7 @@ class Net_SSH2 {
                 $extra.= $temp;
                 $temp = '';
             }
-            $temp.= $this->socket_handler->readBytes($this->fsock, 255);
+            $temp.= $this->socket_handler->readLine($this->fsock, 255);
         }
 
         if ($this->socket_handler->isEof($this->fsock)) {
@@ -671,7 +671,8 @@ class Net_SSH2 {
             throw new Exception("Cannot connect to SSH $matches[1] servers");
         }
 
-        fputs($this->fsock, $this->identifier . "\r\n");
+        $this->socket_handler
+			->writeBytes($this->fsock, $this->identifier . "\r\n");
 
         $response = $this->_get_binary_packet();
         if ($response === false) {
@@ -1617,13 +1618,12 @@ class Net_SSH2 {
      */
     private function _get_binary_packet()
     {
-        if (feof($this->fsock)) {
-            user_error('Connection closed prematurely', E_USER_NOTICE);
-            return false;
+        if ($this->socket_handler->isEof($this->fsock)) {
+			throw new Exception('Connection closed prematurely');
         }
 
         $start = strtok(microtime(), ' ') + strtok(''); // http://php.net/microtime#61838
-        $raw = fread($this->fsock, $this->decrypt_block_size);
+		$raw = $this->socket_handler->readBytes($this->fsock, $this->decrypt_block_size);
         $stop = strtok(microtime(), ' ') + strtok('');
 
         if ($this->decrypt !== false) {
@@ -1635,7 +1635,8 @@ class Net_SSH2 {
         $remaining_length = $packet_length + 4 - $this->decrypt_block_size;
         $buffer = '';
         while ($remaining_length > 0) {
-            $temp = fread($this->fsock, $remaining_length);
+            $temp = $this->socket_handler->readBytes($this->fsock,
+													 $remaining_length);
             $buffer.= $temp;
             $remaining_length-= strlen($temp);
         }
