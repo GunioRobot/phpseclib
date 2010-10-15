@@ -547,7 +547,7 @@ class Net_SSH2 {
      * @see Net_SSH2::_send_channel_packet()
      * @see Net_SSH2::exec()
      */
-    private $window_size = 0x7FFFFFFF;
+    protected $window_size = 0x7FFFFFFF;
 
     /**
      * Window size
@@ -1616,7 +1616,7 @@ class Net_SSH2 {
      * @see Net_SSH2::_send_binary_packet()
      * @return String
      */
-    private function _get_binary_packet()
+    protected function _get_binary_packet()
     {
         if ($this->socket_handler->isEof($this->fsock)) {
 			throw new Exception('Connection closed prematurely');
@@ -1767,7 +1767,7 @@ class Net_SSH2 {
      * @param $client_channel
      * @return Mixed
      */
-    private function _get_channel_packet($client_channel)
+    protected function _get_channel_packet($client_channel)
     {
         if (!empty($this->channel_buffers[$client_channel])) {
             return array_shift($this->channel_buffers[$client_channel]);
@@ -1894,7 +1894,7 @@ class Net_SSH2 {
      * @see Net_SSH2::_get_binary_packet()
      * @return Boolean
      */
-    private function _send_binary_packet($data)
+    protected function _send_binary_packet($data)
     {
         if (feof($this->fsock)) {
 			throw new Exception("Connection closed prematurely");
@@ -1957,7 +1957,7 @@ class Net_SSH2 {
      * @param String $data
      * @return Boolean
      */
-    private function _send_channel_packet($client_channel, $data)
+    protected function _send_channel_packet($client_channel, $data)
     {
         while (strlen($data) > $this->packet_size_client_to_server[$client_channel]) {
             // resize the window, if appropriate
@@ -2052,7 +2052,7 @@ class Net_SSH2 {
      *
      * @param Array $array
      */
-    private function _define_array()
+    protected function _define_array()
     {
         $args = func_get_args();
         foreach ($args as $arg) {
