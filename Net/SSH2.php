@@ -676,7 +676,7 @@ class Net_SSH2 {
 
         $response = $this->_get_binary_packet();
         if ($response === false) {
-            throw new Exception('Connection closed by server');
+            throw new Exception('Failed to get binary packet: Connection closed by server');
         }
 
         if (ord($response[0]) != NET_SSH2_MSG_KEXINIT) {
@@ -764,38 +764,42 @@ class Net_SSH2 {
         $this->_string_shift($response, 1); // skip past the message number (it should be SSH_MSG_KEXINIT)
         $server_cookie = $this->_string_shift($response, 16);
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->kex_algorithms = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->server_host_key_algorithms = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->encryption_algorithms_client_to_server = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->encryption_algorithms_server_to_client = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->mac_algorithms_client_to_server = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->mac_algorithms_server_to_client = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->compression_algorithms_client_to_server = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->compression_algorithms_server_to_client = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->languages_client_to_server = explode(',', $this->_string_shift($response, $temp['length']));
 
-        $temp = unpack('Nlength', $this->_string_shift($response, 4));
+        $temp = @unpack('Nlength', $this->_string_shift($response, 4));
         $this->languages_server_to_client = explode(',', $this->_string_shift($response, $temp['length']));
 
-        extract(unpack('Cfirst_kex_packet_follows', $this->_string_shift($response, 1)));
-        $first_kex_packet_follows = $first_kex_packet_follows != 0;
+        $temp = @unpack('Cfirst_kex_packet_follows', $this->_string_shift($response, 1));
+		if (is_array($temp)) {
+			extract($temp);
+
+			$first_kex_packet_follows = $first_kex_packet_follows != 0;
+		}
 
         // the sending of SSH2_MSG_KEXINIT could go in one of two places.  this is the second place.
         $kexinit_payload_client = pack('Ca*Na*Na*Na*Na*Na*Na*Na*Na*Na*Na*CN',
@@ -1633,6 +1637,7 @@ class Net_SSH2 {
         extract(unpack('Npacket_length/Cpadding_length', $this->_string_shift($raw, 5)));
 
         $remaining_length = $packet_length + 4 - $this->decrypt_block_size;
+
         $buffer = '';
         while ($remaining_length > 0) {
             $temp = $this->socket_handler->readBytes($this->fsock,
@@ -1640,6 +1645,7 @@ class Net_SSH2 {
             $buffer.= $temp;
             $remaining_length-= strlen($temp);
         }
+
         if (!empty($buffer)) {
             $raw.= $this->decrypt !== false ? $this->decrypt->decrypt($buffer) : $buffer;
             $buffer = $temp = '';
@@ -1651,8 +1657,7 @@ class Net_SSH2 {
         if ($this->hmac_check !== false) {
             $hmac = fread($this->fsock, $this->hmac_size);
             if ($hmac != $this->hmac_check->hash(pack('NNCa*', $this->get_seq_no, $packet_length, $padding_length, $payload . $padding))) {
-                user_error('Invalid HMAC', E_USER_NOTICE);
-                return false;
+				throw new Exception("Invalid HMAC");
             }
         }
 
@@ -1684,24 +1689,35 @@ class Net_SSH2 {
      */
     private function _filter($payload)
     {
+		if (empty($payload)) {
+			throw new InvalidArgumentException("Empty payload provided to Net_SSH2::_filter()");
+		}
+
         switch (ord($payload[0])) {
             case NET_SSH2_MSG_DISCONNECT:
                 $this->_string_shift($payload, 1);
                 extract(unpack('Nreason_code/Nlength', $this->_string_shift($payload, 8)));
-                $this->errors[] = 'SSH_MSG_DISCONNECT: ' . $this->disconnect_reasons[$reason_code] . "\r\n" . utf8_decode($this->_string_shift($payload, $length));
+                $this->errors[] = 'SSH_MSG_DISCONNECT: ' 
+					. $this->disconnect_reasons[$reason_code] . "\r\n" 
+					. utf8_decode($this->_string_shift($payload, $length));
+
                 $this->bitmask = 0;
                 return false;
+
             case NET_SSH2_MSG_IGNORE:
                 $payload = $this->_get_binary_packet();
                 break;
+
             case NET_SSH2_MSG_DEBUG:
                 $this->_string_shift($payload, 2);
                 extract(unpack('Nlength', $this->_string_shift($payload, 4)));
                 $this->errors[] = 'SSH_MSG_DEBUG: ' . utf8_decode($this->_string_shift($payload, $length));
                 $payload = $this->_get_binary_packet();
                 break;
+
             case NET_SSH2_MSG_UNIMPLEMENTED:
                 return false;
+
             case NET_SSH2_MSG_KEXINIT:
                 if ($this->session_id !== false) {
                     if (!$this->_key_exchange($payload)) {
@@ -1895,7 +1911,7 @@ class Net_SSH2 {
      */
     protected function _send_binary_packet($data)
     {
-        if (feof($this->fsock)) {
+        if ($this->socket_handler->isEof($this->fsock)) {
 			throw new Exception("Connection closed prematurely");
         }
 
@@ -1932,7 +1948,7 @@ class Net_SSH2 {
         $packet.= $hmac;
 
         $start = strtok(microtime(), ' ') + strtok(''); // http://php.net/microtime#61838
-        $result = strlen($packet) == fputs($this->fsock, $packet);
+        $result = strlen($packet) == $this->socket_handler->writeBytes($this->fsock, $packet);
         $stop = strtok(microtime(), ' ') + strtok('');
 
         if (defined('NET_SSH2_LOGGING')) {

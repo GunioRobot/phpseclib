@@ -46,12 +46,12 @@ class Net_SSH2Test extends PHPUnit_Framework_TestCase {
 
 	/**
 	 * @expectedException Exception
-	 * @expectedExceptionMessage Connection closed by server
-	 *
-	 * @todo This is throwing an exception, when probably there is no
-	 * need to if we could get the mock expectations correct */
-	public function testConnectionV2() {
+	 * @expectedExceptionMessage Key exchange failed
+	 */
+	public function testConnectionFailedKeyExchange() {
 		$mockSocketHandler = $this->getMock('ISocketHandler');
+
+		$kexAlgorithms = 'non-existent-algorithm';
 
 		$mockSocketHandler->expects($this->any())
 			->method('isEof')
@@ -61,10 +61,10 @@ class Net_SSH2Test extends PHPUnit_Framework_TestCase {
 			->method('readLine')
 			->will($this->returnValue('SSH-2.0'));
 
-		$mockSocketHandler->expects($this->exactly(1))
+		$mockSocketHandler->expects($this->exactly(2))
 			->method('readBytes')
-			->will($this->onConsecutiveCalls(pack('NC', 2, 0),
-											 '00'));
+			->will($this->onConsecutiveCalls(pack('NC', 31, 0),
+											 pack('CN', 20, strlen($kexAlgorithms)) . $kexAlgorithms));
 
 		$ssh = new Net_SSH2('nonexistent.invalid', 22, 10, $mockSocketHandler);
 	}
