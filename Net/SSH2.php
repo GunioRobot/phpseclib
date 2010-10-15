@@ -171,8 +171,9 @@ class Net_SSH2 {
      * been successfully executed.  If not, an error should be thrown.
      *
      * @var Integer
+     * @access private
      */
-    private $bitmap = 0;
+    protected $bitmap = 0;
 
     /**
      * Error information
