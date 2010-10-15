@@ -1776,8 +1776,7 @@ class Net_SSH2 {
         while (true) {
             $response = $this->_get_binary_packet();
             if ($response === false) {
-                user_error('Connection closed by server', E_USER_NOTICE);
-                return false;
+				throw new Exception("Connection closed by server");
             }
 
             extract(unpack('Ctype/Nchannel', $this->_string_shift($response, 5)));
