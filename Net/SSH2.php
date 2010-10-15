@@ -171,7 +171,6 @@ class Net_SSH2 {
      * been successfully executed.  If not, an error should be thrown.
      *
      * @var Integer
-     * @access private
      */
     protected $bitmap = 0;
 
@@ -407,7 +406,6 @@ class Net_SSH2 {
      *
      * @see Net_SSH2::Net_SSH2()
      * @var Array
-     * @access private
      */
     private $disconnect_reasons = 
 		array(
@@ -433,7 +431,6 @@ class Net_SSH2 {
      *
      * @see Net_SSH2::Net_SSH2()
      * @var Array
-     * @access private
      */
     private $channel_open_failure_reasons = 
 		array(1 => 'NET_SSH2_OPEN_ADMINISTRATIVELY_PROHIBITED'
@@ -445,7 +442,6 @@ class Net_SSH2 {
      * @link http://tools.ietf.org/html/rfc4254#section-8
      * @see Net_SSH2::Net_SSH2()
      * @var Array
-     * @access private
      */
 	 private $terminal_modes = 
 		 array(0 => 'NET_SSH2_TTY_OP_END'
@@ -457,7 +453,6 @@ class Net_SSH2 {
      * @link http://tools.ietf.org/html/rfc4254#section-5.2
      * @see Net_SSH2::Net_SSH2()
      * @var Array
-     * @access private
      */
     private $channel_extended_data_type_codes = 
 		array(1 => 'NET_SSH2_EXTENDED_DATA_STDERR'
@@ -492,7 +487,7 @@ class Net_SSH2 {
      * @see Net_SSH2::exec()
      * @var Array
      */
-    private $server_channels = array();
+    protected $server_channels = array();
 
     /**
      * Channel Buffers
@@ -514,7 +509,7 @@ class Net_SSH2 {
      * @see Net_SSH2::_get_channel_packet()
      * @var Array
      */
-    private $channel_status = array();
+    protected $channel_status = array();
 
     /**
      * Packet Size
@@ -562,7 +557,7 @@ class Net_SSH2 {
      * @see Net_SSH2::_send_channel_packet()
      * @var Array
      */
-    private $window_size_client_to_server = array();
+    protected $window_size_client_to_server = array();
 
     /**
      * Server signature
