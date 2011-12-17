@@ -83,7 +83,7 @@ function crypt_random($min = 0, $max = 0x7FFFFFFF)
        The seeding routine is pretty much ripped from PHP's own internal GENERATE_SEED() macro:
 
        http://svn.php.net/viewvc/php/php-src/branches/PHP_5_3_2/ext/standard/php_rand.h?view=markup */
-    if (version_compare(PHP_VERSION, '5.2.5', '<=')) { 
+    if (version_compare(PHP_VERSION, '5.2.5', '<=')) {
         static $seeded;
         if (!isset($seeded)) {
             $seeded = true;

@@ -369,7 +369,7 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $message_numbers = 
+    private $message_numbers =
 		array(
 			  1 => 'NET_SSH2_MSG_DISCONNECT',
 			  2 => 'NET_SSH2_MSG_IGNORE',
@@ -407,7 +407,7 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $disconnect_reasons = 
+    private $disconnect_reasons =
 		array(
 			  1 => 'NET_SSH2_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT',
 			  2 => 'NET_SSH2_DISCONNECT_PROTOCOL_ERROR',
@@ -432,7 +432,7 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $channel_open_failure_reasons = 
+    private $channel_open_failure_reasons =
 		array(1 => 'NET_SSH2_OPEN_ADMINISTRATIVELY_PROHIBITED'
 			  );
 
@@ -443,7 +443,7 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-	 private $terminal_modes = 
+	 private $terminal_modes =
 		 array(0 => 'NET_SSH2_TTY_OP_END'
 			   );
 
@@ -454,7 +454,7 @@ class Net_SSH2 {
      * @see Net_SSH2::Net_SSH2()
      * @var Array
      */
-    private $channel_extended_data_type_codes = 
+    private $channel_extended_data_type_codes =
 		array(1 => 'NET_SSH2_EXTENDED_DATA_STDERR'
 			  );
 
@@ -740,7 +740,7 @@ class Net_SSH2 {
         );
 
         static $str_kex_algorithms, $str_server_host_key_algorithms,
-			$encryption_algorithms_server_to_client, 
+			$encryption_algorithms_server_to_client,
 			$mac_algorithms_server_to_client,
 			$compression_algorithms_server_to_client,
 			$encryption_algorithms_client_to_server,
@@ -900,25 +900,25 @@ class Net_SSH2 {
         }
 
         switch ($kex_algorithms[$i]) {
-            // see http://tools.ietf.org/html/rfc2409#section-6.2 and 
+            // see http://tools.ietf.org/html/rfc2409#section-6.2 and
             // http://tools.ietf.org/html/rfc2412, appendex E
             case 'diffie-hellman-group1-sha1':
-                $p = pack('H256', 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74' . 
-                                  '020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F1437' . 
-                                  '4FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED' . 
+                $p = pack('H256', 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74' .
+                                  '020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F1437' .
+                                  '4FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED' .
                                   'EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF');
                 $keyLength = $keyLength < 160 ? $keyLength : 160;
                 $hash = 'sha1';
                 break;
             // see http://tools.ietf.org/html/rfc3526#section-3
             case 'diffie-hellman-group14-sha1':
-                $p = pack('H512', 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74' . 
-                                  '020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F1437' . 
-                                  '4FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED' . 
-                                  'EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF05' . 
-                                  '98DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB' . 
-                                  '9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B' . 
-                                  'E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF695581718' . 
+                $p = pack('H512', 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74' .
+                                  '020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F1437' .
+                                  '4FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED' .
+                                  'EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF05' .
+                                  '98DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB' .
+                                  '9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B' .
+                                  'E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF695581718' .
                                   '3995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF');
                 $keyLength = $keyLength < 160 ? $keyLength : 160;
                 $hash = 'sha1';
@@ -1326,7 +1326,7 @@ class Net_SSH2 {
      */
     private function _keyboard_interactive_login($username, $password)
     {
-        $packet = pack('CNa*Na*Na*Na*Na*', 
+        $packet = pack('CNa*Na*Na*Na*Na*',
             NET_SSH2_MSG_USERAUTH_REQUEST, strlen($username), $username, strlen('ssh-connection'), 'ssh-connection',
             strlen('keyboard-interactive'), 'keyboard-interactive', 0, '', 0, ''
         );
@@ -1697,8 +1697,8 @@ class Net_SSH2 {
             case NET_SSH2_MSG_DISCONNECT:
                 $this->_string_shift($payload, 1);
                 extract(unpack('Nreason_code/Nlength', $this->_string_shift($payload, 8)));
-                $this->errors[] = 'SSH_MSG_DISCONNECT: ' 
-					. $this->disconnect_reasons[$reason_code] . "\r\n" 
+                $this->errors[] = 'SSH_MSG_DISCONNECT: '
+					. $this->disconnect_reasons[$reason_code] . "\r\n"
 					. utf8_decode($this->_string_shift($payload, $length));
 
                 $this->bitmask = 0;

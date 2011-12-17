@@ -19,7 +19,7 @@ class Net_SSH2Test extends PHPUnit_Framework_TestCase {
 		$mockSocketHandler->expects($this->any())
 			->method('isEof')
 			->will($this->returnValue(true));
-		
+
 		$ssh = new Net_SSH2('nonexistent.invalid', 22, 10, $mockSocketHandler);
 	}
 
